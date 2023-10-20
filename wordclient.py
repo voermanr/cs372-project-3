@@ -29,10 +29,9 @@ def get_next_word_packet(s):
 
     global packet_buffer
 
-    # copy word length --and strip it--
-    # print('Looking for word_length in packet_buffer', end='')
+    # copy word length
     while len(packet_buffer) < WORD_LEN_SIZE:
-        receive_word_packets(s)
+        stuff_buffer(s)
         if len(packet_buffer) == 0:
             return None
     # print('')
@@ -47,7 +46,7 @@ def get_next_word_packet(s):
     # copy word_packet
     # print('Looking for word of length ' + str(word_length), end='')
     while len(packet_buffer) < word_length_offset:
-        receive_word_packets(s)
+        stuff_buffer(s)
     # print('')
 
     word_packet = packet_buffer[:word_length_offset]
@@ -61,7 +60,7 @@ def get_next_word_packet(s):
     return word_packet
 
 
-def receive_word_packets(s):
+def stuff_buffer(s):
     global packet_buffer
     r = s.recv(RECV_SIZE)
     if len(r) == 0:
