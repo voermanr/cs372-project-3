@@ -1,8 +1,3 @@
-# There's a time and the time is now and it's right for me
-# It's right for me, and the time is now
-# There's a word and the word is love and it's right for me
-# It's right for me, and the word is love
-
 import socket as so
 import time
 
@@ -10,12 +5,12 @@ host_name = 'time.nist.gov'
 host_port = 37
 
 host_address = (host_name, host_port)
-server_time = 0
-package = b''
+# server_time = 0
+# package = b''
 
 
 def delay_connection(seconds_to_delay: int, verbose: bool = True):
-    print('Waiting ' + str(seconds_to_delay) + ' seconds', end= '')
+    print('Waiting ' + str(seconds_to_delay) + ' seconds', end='')
     for cycle in range(seconds_to_delay):
         if verbose:
             print('.', end='')
@@ -35,25 +30,41 @@ def system_seconds_since_1900():
 
     return seconds_since_1900_epoch
 
+
+def print_threshold():
+    if delta_time <= 10:
+        print('Great!')
+    elif delta_time <= 86400:
+        print('OK.')
+    elif delta_time <= 1000000:
+        print('Not good.')
+    else:
+        print('Broked')
+
+
+def print_bad_package():
+    if package == b'':
+        print('Who packed this? Let me go get new package.')
+
+
 def try_and_get_time():
     # create socket
     socket = so.socket()
     # connect to time.nist.gov:37
-    delay_connection(4)
+    # delay_connection(4)
     socket.connect(host_address)
-    print('Connected')
+    # print('Connected')
 
     # receive data (4 bytes)
-    package = socket.recv(4)
-    print('Package from ' + str(host_name) + ':' + str(host_port) + ' => ' + str(package))
-    if package == b'':
-        print('Who packed this? Let me go get new package.')
+    p = socket.recv(4)
+    # print('Package from ' + str(host_name) + ':' + str(host_port) + ' => ' + str(package))
+    # print_bad_package()
     socket.close()
-    return package
+    return p
 
 
-while package == b'':
-    package = try_and_get_time()
+# while package == b'':
+package = try_and_get_time()
 
 
 # decode with .from_bytes()
@@ -68,11 +79,6 @@ print('System time\t: ' + str(system_time))
 
 # evaluate results
 delta_time = abs(system_time - server_time)
-if delta_time <= 10:
-    print('Great!')
-elif delta_time <= 86400:
-    print('OK.')
-elif delta_time <= 1000000:
-    print('Not good.')
-else:
-    print('Broked')
+
+
+# print_threshold()
