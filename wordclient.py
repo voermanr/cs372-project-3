@@ -33,7 +33,6 @@ def get_next_word_packet(s):
     while len(packet_buffer) < WORD_LEN_SIZE:
         if not stuff_buffer(s):
             return None
-    # print('')
 
     else:
         # copy word length from buffer
