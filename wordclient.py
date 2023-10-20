@@ -61,7 +61,12 @@ def get_next_word_packet(s):
 
 
 def stuff_buffer(s):
+    """
+    receives `RECV_SIZE` bytes from the server, and appends it to the global `packet_buffer`
+    :param s: socket connected to word server
+    """
     global packet_buffer
+
     r = s.recv(RECV_SIZE)
     if len(r) == 0:
         return
