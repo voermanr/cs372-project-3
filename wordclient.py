@@ -29,50 +29,46 @@ def get_next_word_packet(s):
 
     global packet_buffer
 
-    # copy word length
+    # load more data if the buffer isn't big enough for the word_length
     while len(packet_buffer) < WORD_LEN_SIZE:
-        stuff_buffer(s)
-        if len(packet_buffer) == 0:
+        if not stuff_buffer(s):
             return None
     # print('')
 
-    word_length = int.from_bytes(packet_buffer[:WORD_LEN_SIZE], 'big')
-    word_length_offset = word_length + WORD_LEN_SIZE
-    # print("Word Length: " + str(word_length))
-    # packet_buffer = packet_buffer[WORD_LEN_SIZE:]
-    # print('packet_buffer: ', end='')
-    # print(packet_buffer)
+    else:
+        # copy word length from buffer
+        word_length = int.from_bytes(packet_buffer[:WORD_LEN_SIZE], 'big')
 
-    # copy word_packet
-    # print('Looking for word of length ' + str(word_length), end='')
-    while len(packet_buffer) < word_length_offset:
-        stuff_buffer(s)
-    # print('')
+        # calc the word packet length
+        word_packet_length = word_length + WORD_LEN_SIZE
 
-    word_packet = packet_buffer[:word_length_offset]
-    # print('word_packet: ' + str(word_packet) + '\t' + 'len: ' + str(int.from_bytes(word_packet[:WORD_LEN_SIZE], 'big')) + '\tword: ' + str(word_packet[WORD_LEN_SIZE:]))
-    packet_buffer = packet_buffer[word_length_offset:]
-    # print('packet_buffer: ', end='')
-    # print(packet_buffer)
+        # load more data if the packet_buffer is shorter than the word packet
+        while len(packet_buffer) < word_packet_length:
+            stuff_buffer(s)
 
-    # assemble word packet
-    # word_packet = int.to_bytes(WORD_LEN_SIZE, word_length, 'big') + word
-    return word_packet
+        # slice off the word packet
+        word_packet = packet_buffer[:word_packet_length]
+        packet_buffer = packet_buffer[word_packet_length:]
+
+        return word_packet
 
 
 def stuff_buffer(s):
     """
-    receives `RECV_SIZE` bytes from the server, and appends it to the global `packet_buffer`
+    receives `RECV_SIZE` bytes from the server, and appends it to the global `packet_buffer`.
+    Returns True if data was added to the packet_buffer. Otherwise, returns false
     :param s: socket connected to word server
     """
+
     global packet_buffer
 
     r = s.recv(RECV_SIZE)
-    if len(r) == 0:
-        return
+    if len(r) != 0:
+        packet_buffer += r
+        return True
 
-    # print('.', end='')
-    packet_buffer += r
+    else:
+        return False
 
 
 def extract_word(word_packet):
