@@ -11,6 +11,7 @@ host_port = 37
 
 host_address = (host_name, host_port)
 server_time = 0
+package = b''
 
 
 def delay_connection(seconds_to_delay: int, verbose: bool = True):
@@ -34,21 +35,26 @@ def system_seconds_since_1900():
 
     return seconds_since_1900_epoch
 
+def try_and_get_time():
+    # create socket
+    socket = so.socket()
+    # connect to time.nist.gov:37
+    delay_connection(4)
+    socket.connect(host_address)
+    print('Connected')
 
-# create socket
-socket = so.socket()
+    # receive data (4 bytes)
+    package = socket.recv(4)
+    print('Package from ' + str(host_name) + ':' + str(host_port) + ' => ' + str(package))
+    if package == b'':
+        print('Who packed this? Let me go get new package.')
+    socket.close()
+    return package
 
-# connect to time.nist.gov:37
-delay_connection(4)
-socket.connect(host_address)
-print('Connected')
 
-# reveive data (4 bytes)
-package = socket.recv(4)
-print('Package from ' + str(host_name) + ':' + str(host_port) + ' => ' + str(package))
-if package == b'':
-    print('Who packed this?')
-socket.close()
+while package == b'':
+    package = try_and_get_time()
+
 
 # decode with .from_bytes()
 server_time = int.from_bytes(package, 'big')
